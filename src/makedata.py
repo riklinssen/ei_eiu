@@ -1,7 +1,8 @@
 
 # Even it Up impact measuremennt, stats from quarterly poll perception research
 # Rik Linssen - Feb 2020
-# geithub respository here: www.github.com/riklinssen/ei_eiu
+# github repository here: www.github.com/riklinssen/ei_eiu
+
 
 #############IMPORTS########################
 import numpy as np
