@@ -18,8 +18,8 @@ Project is created with:
 └requirements.txt                    <- requirements for virtualenv.
 ```
 # data
-[longitudinal.pkl](https://oxfam.box.com/s/9tvgl5wubt70sq4lvc5acbvxpjn98ez0)  Oxfam Novib access only
-[q3_2019  poll dataset](https://oxfam.box.com/s/n5pr3fx7y3o0nhoylgr5wyvk1n6zt3rz) Oxfam Novib access only
+- [longitudinal.pkl](https://oxfam.box.com/s/9tvgl5wubt70sq4lvc5acbvxpjn98ez0)  Oxfam Novib access only
+- [q3_2019  poll dataset](https://oxfam.box.com/s/n5pr3fx7y3o0nhoylgr5wyvk1n6zt3rz) Oxfam Novib access only
 
 
 
