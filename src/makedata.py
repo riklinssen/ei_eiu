@@ -251,13 +251,20 @@ graphs = base_path / "graphs"
 
 
 #MAKE DATASETS
-q32019= pd.read_pickle(data/"q3_2019_clean.pkl", )
+q32019= pd.read_pickle(data/"q3_2019_clean.pkl" )
 
 
 # check data
 
 
-colslist=['eiu_heard_taxevasion_heard','eiu_heard_taxevasion_know','eiu_heard_taxevasion_on_heard', 'eiu_heard_taxevasion_on_petition_seen',   'eiu_heard_taxevasion_on_dolfj_seen', 'mentality','wgprop']
+colslist=[ 'eiu_heard_taxevasion_heard',
+ 'eiu_heard_taxevasion_know',
+ 'eiu_heard_taxevasion_on_heard',
+ 'eiu_heard_taxevasion_on_know',
+ 'eiu_heard_taxevasion_on_petition_seen',
+ 'eiu_heard_taxevasion_on_dolfj_seen',
+ 'mentality',
+ 'wgprop']
 eiu_df=(q32019.loc[:,colslist]
     .assign(total=lambda x: 'Total') #add 1 for totals
     .assign(mentality_eng=lambda x: x['mentality'].map(mentalitytranslator)) # add mentality in eng
@@ -391,7 +398,7 @@ heights=[1]
 fig=plt.figure(figsize=(10.48, 6.55))
 gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=widths, height_ratios=heights)
 ax1=fig.add_subplot(gs[0, 0])
-ax1.bar(x=sel_notknow_t.index, height=sel_notknow_t['weighted mean'],  color=sel_notknow_t['color'], alpha=0.5)
+ax1.bar(x=sel_notknow_t.index, height=sel_notknow_t['weighted mean'],  color=sel_notknow_t['color'], alpha=0.6)
 ax1.bar(x=sel_know_t.index, height=sel_know_t['weighted mean'], color=sel_know_t['color'], bottom=sel_notknow_t['weighted mean'])
 #texts
 ax1.text(x=sel_notknow_t.index,y=(sel_notknow_t['weighted mean']/2), s=str(int(sel_notknow_t['weighted mean']*100))+ '%', color='white',ha='center')
@@ -401,7 +408,7 @@ ax1.set_title('Total \n(% of population)')
 
 #by mentality
 ax2=fig.add_subplot(gs[0, 1], sharey=ax1)
-b1=ax2.bar(x=sel_notknow_mt.index, height=sel_notknow_mt['weighted mean'], color=sel_notknow_mt['color'], alpha=0.5)
+b1=ax2.bar(x=sel_notknow_mt.index, height=sel_notknow_mt['weighted mean'], color=sel_notknow_mt['color'], alpha=0.6)
 for bar in b1.patches:
     height = bar.get_height()
     heightval=str(int(bar.get_height()*100))+ '%'
@@ -444,7 +451,7 @@ fig.suptitle("Has heard about tax evasion in the news, \n and (does not) remembe
 
 #footnotes
 nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
-plt.figtext(0, -0.25, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs+'.\nTransparent bars represents share of people who have heard about tax evasion but cannot remember exactly what that was about \nDark bars represent people who have heard about it and know exactly what that was about. \nCumulative percentages plotted on top of bars.'  ,  size='small')
+plt.figtext(0, -0.25, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs+'.\nTransparent bars represent share of people who have heard about tax evasion but cannot remember exactly what that was about.\nDark bars represent people who have heard about it and know exactly what that was about. \nCumulative percentages plotted on top of bars.'  ,  size='small')
 
 
 fig.savefig(filename,  facecolor='w', bbox_inches='tight')
