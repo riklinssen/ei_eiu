@@ -581,3 +581,26 @@ fig.savefig(filename,  facecolor='w', bbox_inches='tight')
 
 
 fig.show()
+
+
+
+##word cloud for what did people hear/read in the news
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+filename=graphs/"wordcloud.png"
+
+
+text = " ".join(text for text in q32019.eiu_heard_taxevasion_txt)
+#print ("There are {} words in the combination of all what have you heard about tax evasion.".format(len(text)))
+
+# Create stopword list:
+stopword_l=['de', 'dat', 'en', 'op', 'omdat', 'hebben', 'al', 'van', 'een', 'het', 'met', 'er', 'zich', 'is', 'ze', 'om', 'zo', 'dus', 'wordt', 'word', 'ik', 'Ik', 'toch', 'ook', 'als', 'voor', 'weet niet', 'precies']
+stopwords = set(stopword_l)
+
+# Generate a word cloud image
+wordcloud = WordCloud(width=800, height=400, stopwords=stopwords, background_color="white", max_font_size=50, max_words=150).generate(text)
+plt.figure(figsize=((10.48), 6.55))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.savefig(filename)
+
+
