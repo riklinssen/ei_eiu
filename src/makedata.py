@@ -265,6 +265,8 @@ eiu_df=(q32019.loc[:,colslist]
 #heard but did not know about. 
 eiu_df['eiu_heard_taxevasion_heard_notknow']=np.where((eiu_df['eiu_heard_taxevasion_heard']==1) & (eiu_df['eiu_heard_taxevasion_know']==0), 1, 0 )
 
+#eiu_df['eiu_heard_taxevasion_on_heard']=np.where((eiu_df['eiu_heard_taxevasion_heard']==1) & (eiu_df['eiu_heard_taxevasion_know']==0), 1, 0 )
+
 
 
  
