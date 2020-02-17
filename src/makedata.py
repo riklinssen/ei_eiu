@@ -271,30 +271,38 @@ eiu_df=(q32019.loc[:,colslist]
     )  
 #heard but did not know about. 
 eiu_df['eiu_heard_taxevasion_heard_notknow']=np.where((eiu_df['eiu_heard_taxevasion_heard']==1) & (eiu_df['eiu_heard_taxevasion_know']==0), 1, 0 )
+#for on re tax evasion
+eiu_df['eiu_heard_taxevasion_on_heard_notknow']=np.where((eiu_df['eiu_heard_taxevasion_on_heard']==1) & (eiu_df['eiu_heard_taxevasion_on_know']==0), 1, 0 )
 
-#eiu_df['eiu_heard_taxevasion_on_heard']=np.where((eiu_df['eiu_heard_taxevasion_heard']==1) & (eiu_df['eiu_heard_taxevasion_know']==0), 1, 0 )
+#set nans in petition and dolfj to 0 for whole population
 
-
+for c in ['eiu_heard_taxevasion_on_petition_seen', 'eiu_heard_taxevasion_on_dolfj_seen']: 
+    print(eiu_df[c].value_counts(dropna=False))
+    eiu_df[c]=eiu_df[c].fillna(0)
+    print(eiu_df[c].value_counts(dropna=False))
 
  
-
-#make a dum with heard about taxevasion but does not know exactly what it is about.     
 
 
 outputcols=['eiu_heard_taxevasion_heard',
     'eiu_heard_taxevasion_heard_notknow',
     'eiu_heard_taxevasion_know',
     'eiu_heard_taxevasion_on_heard',
+    'eiu_heard_taxevasion_on_heard_notknow',
+    'eiu_heard_taxevasion_on_know',
     'eiu_heard_taxevasion_on_petition_seen',
     'eiu_heard_taxevasion_on_dolfj_seen']
 for c in outputcols: 
     print(eiu_df[c].value_counts(dropna=False))
 
+for c in outputcols: 
+    print(eiu_df[c].value_counts(dropna=False, normalize=True))
+
 eiu_stats_by_total=grouped_weights_statsdf(eiu_df, outputcols, 'total', 'wgprop')
 
 eiu_stats_by_mt=grouped_weights_statsdf(eiu_df, outputcols, 'mentality_eng', 'wgprop')
-####has heard about tax evasion###
-#sort stats by mt then concat with total.
+
+#make indexslice 
 idx = pd.IndexSlice
 
 # sel_t=eiu_stats_by_total.loc[idx['eiu_heard_taxevasion_heard', 'eiu_heard_taxevasion_know', 'eiu_heard_taxevasion_heard_notknow'],:,:]
@@ -456,3 +464,119 @@ plt.figtext(0, -0.25, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs+'.
 
 fig.savefig(filename,  facecolor='w', bbox_inches='tight')
 
+
+
+
+
+### has heard about tax evasion from ON and knows what it was about detailed breakdown
+
+
+
+sel_notknow_on_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_on_heard_notknow'],:,:]].droplevel(level=0)
+sel_know_on_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_on_know'],:,:]].droplevel(level=0)
+
+
+
+
+#add colors
+sel_notknow_on_t['color']=sel_notknow_t.index.map(segmentcolormap_en)
+sel_know_on_t['color']=sel_know_t.index.map(segmentcolormap_en)
+
+#further breakdown by segment is not possible sel_know_on_t nrobs<105
+
+
+filename=graphs/'heard_on_abouttaxev_total.svg'
+
+fig=plt.figure(figsize=((10.48/2), 6.55))
+ax1=fig.add_subplot()
+ax1.bar(x=sel_notknow_on_t.index, height=sel_notknow_on_t['weighted mean'],  color='#61A534', alpha=0.6)
+ax1.bar(x=sel_know_on_t.index, height=sel_know_on_t['weighted mean'], color='#0C884A', bottom=sel_notknow_on_t['weighted mean'])
+#texts
+ax1.text(x=sel_notknow_on_t.index,y=(sel_notknow_on_t['weighted mean']/2), s=str(int(sel_notknow_on_t['weighted mean']*100))+ '%', color='white',ha='center')
+ax1.text(x=sel_know_on_t.index,y=(sel_notknow_on_t['weighted mean']+sel_know_on_t['weighted mean'])*1.1, s=str(int((sel_notknow_on_t['weighted mean']+sel_know_on_t['weighted mean'])*100))+ '%', color='black', ha='center')
+ax1.set_title('Total \n(% of population)')
+
+
+for ax in fig.axes:
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
+    ax.set_ylim(0,1)
+    ax.set_ylabel('% of people', fontstyle='italic') 
+    
+
+    #labels
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)
+        label.set_ha('center')
+        label.set_fontsize('large')
+    
+    #spines
+    ax.spines['left'].set_visible(True)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+fig.suptitle("Has heard Oxfam Novib \nabout tax evasion in the news, \n and (does not) remember what that was about ", size=14, y=1.05, color='black')
+
+#footnotes
+nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
+plt.figtext(0, -0.1, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs+'.\nLight green bar represent share of people who have heard about tax evasion \nbut cannot remember exactly what that was about.\nDark green bars represent people who have heard about it\nand know exactly what that was about (1.6%). \nCumulative percentages plotted on top of bars.'  ,  size='small')
+
+
+fig.savefig(filename,  facecolor='w', bbox_inches='tight')
+fig.show()
+
+
+
+##call for petition and dolf jansen
+
+#select data
+sel_petition_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_on_petition_seen'],:,:]].droplevel(level=0)
+sel_dolf_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_on_dolfj_seen'],:,:]].droplevel(level=0)
+
+#errorbars
+#add errorterms for easy plotting 
+sel_petition_t['err']=sel_petition_t['upper bound']-sel_petition_t['weighted mean']
+sel_dolf_t['err']=sel_dolf_t['upper bound']-sel_dolf_t['weighted mean']
+
+filename=graphs/'seen_dolf_petition.svg'
+fig=plt.figure(figsize=((10.48), 6.55))
+gs = fig.add_gridspec(nrows=1, ncols=2)
+
+ax1=fig.add_subplot(gs[0,0])
+ax1.bar(x=sel_petition_t.index, height=sel_petition_t['weighted mean'], color='#697093', yerr=sel_petition_t['err'], ecolor='lightgrey')
+ax1.set_title('Seen blue envelope \n(% of population)')
+
+ax2=fig.add_subplot(gs[0,1], sharey=ax1)
+ax2.bar(x=sel_dolf_t.index, height=sel_dolf_t['weighted mean'], color='#0C884A',  yerr=sel_dolf_t['err'], ecolor='lightgrey')
+ax2.set_title('Seen Dolf Jansen\n(% of population)')
+
+
+for ax in fig.axes:
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
+    ax.set_ylim(0,1)
+    ax.set_ylabel('% of people that have seen message', fontstyle='italic') 
+    autolabelpercenttop(ax, xpos='left')
+
+    #labels
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)
+        label.set_ha('center')
+        label.set_fontsize('large')
+    
+    #spines
+    ax.spines['left'].set_visible(True)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+ax2.axes.get_yaxis().set_visible(False)
+ax2.spines['left'].set_visible(False)
+
+fig.suptitle("Seen messages: \nblue envelope & Dolf Jansen", size=14, y=1.05, color='black')
+
+#footnotes
+nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
+plt.figtext(0, -0.1, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs +'\nvertical lines represent 95% confidence intervals' ,  size='small')
+
+fig.savefig(filename,  facecolor='w', bbox_inches='tight')
+
+
+fig.show()
