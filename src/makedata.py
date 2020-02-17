@@ -55,6 +55,9 @@ segmentcolormap_en = dict(zip(
     [v for k, v in colormap.items()]
 ))
 
+#add total
+segmentcolormap_en['Total']='000000'
+
 # generate grouping into warm cold and peripheral audience
 mentalityaudiencemap = {'Modern mainstream': 'Peripheral A',
                         'Social climbers': 'Cold',
@@ -197,6 +200,43 @@ def grouped_weights_statsdf(df, statscols, groupbycol, weightscol):
                
     return alldata
 
+def autolabelpercentmid(ax, xpos='center'):
+    """
+    Attach a text label above each bar (a percentage) in *ax*, displaying its height.
+
+    *xpos* indicates which side to place the text w.r.t. the center of
+    the bar. It can be one of the following {'center', 'right', 'left'}.
+    """
+
+    xpos = xpos.lower()  # normalize the case of the parameter
+    ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    offset = {'center': 0.5, 'right': 0.57, 'left': 0.43}  # x_txt = x + w*off
+    bars=ax.patches
+    for bar in bars:
+        height = bar.get_height()
+        heightval=str(int(bar.get_height()*100))+ '%'
+        ax.text(bar.get_x() + bar.get_width()*offset[xpos], (0.5*height),
+        heightval, fontsize=8, ha=ha[xpos], va='bottom', color='white', alpha=1)
+
+
+def autolabelpercenttop(ax, xpos='center'):
+    """
+    Attach a text label above each bar (a percentage) in *ax*, displaying its height.
+
+    *xpos* indicates which side to place the text w.r.t. the center of
+    the bar. It can be one of the following {'center', 'right', 'left'}.
+    """
+
+    xpos = xpos.lower()  # normalize the case of the parameter
+    ha = {'center': 'center', 'right': 'left', 'left': 'right'}
+    offset = {'center': 0.5, 'right': 0.57, 'left': 0.43}  # x_txt = x + w*off
+    bars=ax.patches
+    for bar in bars:
+        height = bar.get_height()
+        heightval=str(int(bar.get_height()*100))+ '%'
+        ax.text(bar.get_x() + bar.get_width()*offset[xpos], (1.01*height),
+        heightval, fontsize=12, ha=ha[xpos], va='bottom', color=bar.get_facecolor(), alpha=1)
+
 
 
 
@@ -216,58 +256,203 @@ q32019= pd.read_pickle(data/"q3_2019_clean.pkl", )
 
 # check data
 
-test=np.where()
 
 colslist=['eiu_heard_taxevasion_heard','eiu_heard_taxevasion_know','eiu_heard_taxevasion_on_heard', 'eiu_heard_taxevasion_on_petition_seen',   'eiu_heard_taxevasion_on_dolfj_seen', 'mentality','wgprop']
 eiu_df=(q32019.loc[:,colslist]
     .assign(total=lambda x: 'Total') #add 1 for totals
     .assign(mentality_eng=lambda x: x['mentality'].map(mentalitytranslator)) # add mentality in eng
-    .assign(eiu_heard_taxevasion_heard_notknow=lambda x: 1 if x['eiu_heard_taxevasion_heard']==1.map(mentalitytranslator)) # add mentality in eng
-    )
+    )  
+#heard but did not know about. 
+eiu_df['eiu_heard_taxevasion_heard_notknow']=np.where((eiu_df['eiu_heard_taxevasion_heard']==1) & (eiu_df['eiu_heard_taxevasion_know']==0), 1, 0 )
+
+
+
+ 
 
 #make a dum with heard about taxevasion but does not know exactly what it is about.     
 
 
 outputcols=['eiu_heard_taxevasion_heard',
+    'eiu_heard_taxevasion_heard_notknow',
     'eiu_heard_taxevasion_know',
     'eiu_heard_taxevasion_on_heard',
     'eiu_heard_taxevasion_on_petition_seen',
     'eiu_heard_taxevasion_on_dolfj_seen']
 for c in outputcols: 
-    print(q32019[c].value_counts(dropna=False))
+    print(eiu_df[c].value_counts(dropna=False))
 
 eiu_stats_by_total=grouped_weights_statsdf(eiu_df, outputcols, 'total', 'wgprop')
 
 eiu_stats_by_mt=grouped_weights_statsdf(eiu_df, outputcols, 'mentality_eng', 'wgprop')
-
 ####has heard about tax evasion###
 #sort stats by mt then concat with total.
 idx = pd.IndexSlice
 
-sel_t=eiu_stats_by_total.loc[idx['eiu_heard_taxevasion_heard', 'eiu_heard_taxevasion_know'],:,:].reset_index()
-sel_mt=eiu_stats_by_mt.loc[idx['eiu_heard_taxevasion_heard', 'eiu_heard_taxevasion_know'],:,:].sort_values(by='weighted mean')
+# sel_t=eiu_stats_by_total.loc[idx['eiu_heard_taxevasion_heard', 'eiu_heard_taxevasion_know', 'eiu_heard_taxevasion_heard_notknow'],:,:]
+# sel_mt=eiu_stats_by_mt.loc[idx['eiu_heard_taxevasion_heard', 'eiu_heard_taxevasion_know', 'eiu_heard_taxevasion_heard_notknow'],:,:].sort_values(by='weighted mean')
 
 
 
+sel_t=eiu_stats_by_total.loc[idx['eiu_heard_taxevasion_heard',:,:]]
+sel_mt=eiu_stats_by_mt.loc[idx['eiu_heard_taxevasion_heard',:,:]].sort_values(by='weighted mean', ascending=False)
+sortorder={v: i for i, v in enumerate(sel_mt.index)}
 
-filename=graphs/'heardabouttaxev.svg'
+#add colors
+sel_t['color']=sel_t.index.map(segmentcolormap_en)
+sel_mt['color']=sel_mt.index.map(segmentcolormap_en)
 
-fig=plt.figure(figsize=(10.48, 6.55))
-gs = fig.add_gridspec(1, 3)
-ax1=fig.add_subplot(gs[0, 0])
-ax1.bar(x=taxevheard, height=
-(x=sel_t['groups'], height=age_mt[segment], color=segmentcolormap_en[segment])
-
-ax2=fig.add_subplot(gs[0, 1: ])
-
-fig.show()
+#errorbars
+#add errorterms for easy plotting 
+sel_t['err']=sel_t['upper bound']-sel_t['weighted mean']
+sel_mt['err']=sel_mt['upper bound']-sel_mt['weighted mean']
 
 
-fig,(ax1. ax2)= plt.subplots(1, 1, sharey='col',figsize=(10.48, 6.55))
-ax1
 
-fig.show()
-fig.savefig(filename,  facecolor='w', bbox_inches='tight')
 
 # EiUA1. Heb je in de afgelopen 12 maanden in het nieuws of op sociale media iets gezien of gehoord over belastingontwijking door grote bedrijven?
+
+filename=graphs/'heardabouttaxev.svg'
+widths=[1,6]
+heights=[1]
+fig=plt.figure(figsize=(10.48, 6.55))
+gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=widths, height_ratios=heights)
+ax1=fig.add_subplot(gs[0, 0])
+ax1.bar(x=sel_t.index, height=sel_t['weighted mean'],  color=sel_t['color'], yerr=sel_t['err'], ecolor='lightgrey')
+ax1.set_title('Total \n(% of population)')
+ax2=fig.add_subplot(gs[0, 1], sharey=ax1)
+ax2.bar(x=sel_mt.index, height=sel_mt['weighted mean'], color=sel_mt['color'], yerr=sel_mt['err'], ecolor='lightgrey')
+ax2.set_title('by segment \n(% of segment)')
+for ax in fig.axes:
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
+    ax.set_ylim(0,1)
+    ax.set_ylabel('% of people that heard about tax evasion', fontstyle='italic') 
+    autolabelpercenttop(ax, xpos='left')
+
+    #labels
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)
+        label.set_ha('center')
+        label.set_fontsize('large')
+    
+    #spines
+    ax.spines['left'].set_visible(True)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+ax2.axes.get_yaxis().set_visible(False)
+ax2.spines['left'].set_visible(False)
+
+fig.suptitle("Has heard about tax evasion in the news", size=14, y=1.05, color='black')
+
+#footnotes
+nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
+plt.figtext(0, -0.2, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs +'\nvertical lines represent 95% confidence intervals' ,  size='small')
+
+
+fig.savefig(filename,  facecolor='w', bbox_inches='tight')
+
+
+
+### has heard and knows what it was about detailed breakdown
+
+##make sortorder for segments equal to previous graphs
+
+
+sel_notknow_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_heard_notknow'],:,:]].droplevel(level=0)
+sel_know_t=eiu_stats_by_total.loc[idx[['eiu_heard_taxevasion_know'],:,:]].droplevel(level=0)
+
+
+sel_notknow_mt=eiu_stats_by_mt.loc[idx[['eiu_heard_taxevasion_heard_notknow'],:,:]].droplevel(level=0)
+sel_notknow_mt['order']=sel_notknow_mt.index.map(sortorder)
+sel_notknow_mt=sel_notknow_mt.sort_values(by='order')
+
+sel_know_mt=eiu_stats_by_mt.loc[idx[['eiu_heard_taxevasion_know'],:,:]].droplevel(level=0)
+sel_know_mt['order']=sel_know_mt.index.map(sortorder)
+sel_know_mt=sel_know_mt.sort_values(by='order')
+
+
+
+#add colors
+sel_notknow_t['color']=sel_notknow_t.index.map(segmentcolormap_en)
+sel_know_t['color']=sel_know_t.index.map(segmentcolormap_en)
+
+
+sel_notknow_mt['color']=sel_notknow_mt.index.map(segmentcolormap_en)
+sel_know_mt['color']=sel_know_mt.index.map(segmentcolormap_en)
+
+
+
+
+filename=graphs/'heardabouttaxev_detail.svg'
+widths=[1,6]
+heights=[1]
+fig=plt.figure(figsize=(10.48, 6.55))
+gs = fig.add_gridspec(nrows=1, ncols=2, width_ratios=widths, height_ratios=heights)
+ax1=fig.add_subplot(gs[0, 0])
+ax1.bar(x=sel_notknow_t.index, height=sel_notknow_t['weighted mean'],  color=sel_notknow_t['color'], alpha=0.5)
+ax1.bar(x=sel_know_t.index, height=sel_know_t['weighted mean'], color=sel_know_t['color'], bottom=sel_notknow_t['weighted mean'])
+#texts
+ax1.text(x=sel_notknow_t.index,y=(sel_notknow_t['weighted mean']/2), s=str(int(sel_notknow_t['weighted mean']*100))+ '%', color='white',ha='center')
+ax1.text(x=sel_know_t.index,y=(sel_notknow_t['weighted mean']+(sel_know_t['weighted mean']/2)), s=str(int(sel_know_t['weighted mean']*100))+ '%', color='white', ha='center')
+ax1.text(x=sel_know_t.index,y=(sel_notknow_t['weighted mean']+sel_know_t['weighted mean'])*1.05, s=str(int((sel_notknow_t['weighted mean']+sel_know_t['weighted mean'])*100))+ '%', color='black', ha='center')
+ax1.set_title('Total \n(% of population)')
+
+#by mentality
+ax2=fig.add_subplot(gs[0, 1], sharey=ax1)
+b1=ax2.bar(x=sel_notknow_mt.index, height=sel_notknow_mt['weighted mean'], color=sel_notknow_mt['color'], alpha=0.5)
+for bar in b1.patches:
+    height = bar.get_height()
+    heightval=str(int(bar.get_height()*100))+ '%'
+    ax2.text((bar.get_x() + bar.get_width()/2), (0.5*height), heightval, fontsize=8, ha='center', color='white')
+
+b2=ax2.bar(x=sel_know_mt.index, height=sel_know_mt['weighted mean'], color=sel_know_mt['color'], bottom=sel_notknow_mt['weighted mean'])
+for bar in b2.patches:
+    bottom =bar.get_y()
+    height = bar.get_height()
+    heightval=str(int(bar.get_height()*100))+ '%'
+    #middle
+    ax2.text((bar.get_x() + bar.get_width()/2), (bottom+(0.5*height)), heightval, fontsize=12, ha='center', color='white')
+    #total
+    heighttop=(bottom+height)
+    heightvaltop=str(int(heighttop*100))+ '%'
+    ax2.text((bar.get_x() + bar.get_width()/2), heighttop*1.05, heightvaltop,  ha='center', color=bar.get_facecolor(), fontsize=12)
+ax2.set_title('by segment \n(% of segment)')
+
+
+
+
+#texts
+#ax2.text(x=txtnotknow.index, y=txtnotknow.ypos, s=txtnotknow.value, color='white',ha='center')
+#ax2.text(x=sel_notknow_mt.index,y=(sel_notknow_mt['weighted mean']+(sel_know_mt['weighted mean']/2)), s=str(int(sel_know_mt['weighted mean']*100))+ '%', color='white', ha='center')
+#ax2.text(x=sel_notknow_mt.index,y=(sel_notknow_mt['weighted mean']+sel_know_mt['weighted mean'])*1.05, s=str(int((sel_notknow_mt['weighted mean']+sel_know_mt['weighted mean']))))
+
+
+for ax in fig.axes:
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
+    ax.set_ylim(0,1)
+    ax.set_ylabel('% of people that heard about tax evasion', fontstyle='italic') 
+    
+
+    #labels
+    for label in ax.get_xticklabels():
+        label.set_rotation(90)
+        label.set_ha('center')
+        label.set_fontsize('large')
+    
+    #spines
+    ax.spines['left'].set_visible(True)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+
+ax2.axes.get_yaxis().set_visible(False)
+ax2.spines['left'].set_visible(False)
+
+fig.suptitle("Has heard about tax evasion in the news", size=14, y=1.05, color='black')
+
+#footnotes
+nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
+plt.figtext(0, -0.2, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs +'\nvertical lines represent 95% confidence intervals' ,  size='small')
+
+
+fig.savefig(filename,  facecolor='w', bbox_inches='tight')
 
