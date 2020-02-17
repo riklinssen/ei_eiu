@@ -418,19 +418,10 @@ for bar in b2.patches:
     ax2.text((bar.get_x() + bar.get_width()/2), heighttop*1.05, heightvaltop,  ha='center', color=bar.get_facecolor(), fontsize=12)
 ax2.set_title('by segment \n(% of segment)')
 
-
-
-
-#texts
-#ax2.text(x=txtnotknow.index, y=txtnotknow.ypos, s=txtnotknow.value, color='white',ha='center')
-#ax2.text(x=sel_notknow_mt.index,y=(sel_notknow_mt['weighted mean']+(sel_know_mt['weighted mean']/2)), s=str(int(sel_know_mt['weighted mean']*100))+ '%', color='white', ha='center')
-#ax2.text(x=sel_notknow_mt.index,y=(sel_notknow_mt['weighted mean']+sel_know_mt['weighted mean'])*1.05, s=str(int((sel_notknow_mt['weighted mean']+sel_know_mt['weighted mean']))))
-
-
 for ax in fig.axes:
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=1))
     ax.set_ylim(0,1)
-    ax.set_ylabel('% of people that heard about tax evasion', fontstyle='italic') 
+    ax.set_ylabel('% of people', fontstyle='italic') 
     
 
     #labels
@@ -447,11 +438,11 @@ for ax in fig.axes:
 ax2.axes.get_yaxis().set_visible(False)
 ax2.spines['left'].set_visible(False)
 
-fig.suptitle("Has heard about tax evasion in the news", size=14, y=1.05, color='black')
+fig.suptitle("Has heard about tax evasion in the news, \n and (does not) remember what that was about ", size=14, y=1.05, color='black')
 
 #footnotes
 nrobs=str(sel_t.at['Total','tot_n_unweigthed'])
-plt.figtext(0, -0.2, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs +'\nvertical lines represent 95% confidence intervals' ,  size='small')
+plt.figtext(0, -0.25, 'Source: Quarterly poll Q3 2019 (Sept),' + ' n=' +nrobs+'.\nTransparent bars represents share of people who have heard about tax evasion but cannot remember exactly what that was about \nDark bars represent people who have heard about it and know exactly what that was about. \nCumulative percentages plotted on top of bars.'  ,  size='small')
 
 
 fig.savefig(filename,  facecolor='w', bbox_inches='tight')
