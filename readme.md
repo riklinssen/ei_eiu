@@ -18,7 +18,7 @@ Project is created with:
 └requirements.txt                    <- requirements for virtualenv.
 ```
 # data
-[longitudinal.pklLongitudinal dataset=all quarterly polls](https://oxfam.box.com/s/9tvgl5wubt70sq4lvc5acbvxpjn98ez0)  
+[longitudinal.pkl](https://oxfam.box.com/s/9tvgl5wubt70sq4lvc5acbvxpjn98ez0)  
 [q3_2019  poll dataset](https://oxfam.box.com/s/n5pr3fx7y3o0nhoylgr5wyvk1n6zt3rz)
 
 
