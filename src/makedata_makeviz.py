@@ -590,7 +590,7 @@ filename=graphs/"wordcloud.png"
 
 
 text = " ".join(text for text in q32019.eiu_heard_taxevasion_txt)
-#print ("There are {} words in the combination of all what have you heard about tax evasion.".format(len(text)))
+print ("There are {} words in the combination of all what have you heard about tax evasion.".format(len(text)))
 
 # Create stopword list:
 stopword_l=['de', 'dat', 'en', 'op', 'omdat', 'hebben', 'al', 'van', 'een', 'het', 'met', 'er', 'zich', 'is', 'ze', 'om', 'zo', 'dus', 'wordt', 'word', 'ik', 'Ik', 'toch', 'ook', 'als', 'voor', 'weet niet', 'precies']
@@ -604,3 +604,5 @@ plt.axis("off")
 plt.savefig(filename)
 
 
+textexport=q32019[['eiu_heard_taxevasion_txt', 'mentality', 'dlnmid_y',  'dlnmid_x']].copy()
+textexport.to_csv('taxevasion_texts.csv')
